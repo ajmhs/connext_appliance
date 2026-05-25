@@ -1,0 +1,41 @@
+# Tells the ca command to use the configuration options in the root_ca section
+[ ca ]
+default_ca  = root_ca    # The default CA section
+
+[ root_ca ]
+dir             = ./root-ca           # Defines a variable
+serial          = $dir/db/ca-cert.srl # Serial number file for certs
+crlnumber       = $dir/db/ca-crl.srl  # Serial number file for revocations
+database        = $dir/db/ca.db       # Certificate index file
+new_certs_dir   = $dir/cert           # Archive of issued certs
+
+certificate     = cert/root-ca-cert.pem  # The CA certificate file
+private_key     = $dir/private/key.pem   # The CA's private key file
+
+default_md      = sha256            # The digest type
+unique_subject  = no                # Allow for subject duplicates
+email_in_dn     = no                # Do not include email address in DN
+policy          = match_policy      # See section below
+
+name_opt        = ca_default        # Subject DN display options
+cert_opt        = ca_default        # Certificate display options
+
+# Defines which fields in CSRs must match the CAs fields
+[ match_policy ]
+countryName          = match
+stateOrProvinceName  = match
+localityName         = match
+organizationName     = match
+commonName           = supplied
+
+[ req ]
+prompt                 = no        # Don't prompt for certificate fields.
+distinguished_name     = req_distinguished_name
+
+[ req_distinguished_name ]
+countryName            = US
+stateOrProvinceName    = CA
+localityName           = Sunnyvale
+0.organizationName     = My Company
+commonName             = My Company CA
+emailAddress           = identity_ca@mycompany.com

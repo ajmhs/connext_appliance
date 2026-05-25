@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<dds xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:noNamespaceSchemaLocation="https://community.rti.com/schema/7.3.1/rti_routing_service.xsd">
+
+    <routing_service name="WanFanoutHub">
+
+        <domain_route name="WanRelay">
+
+            <!-- Single WAN participant reachable at a well-known public address/port -->
+            <participant name="WanRelaySide">
+                <domain_id>1</domain_id>
+                <domain_participant_qos>
+                    <transport_builtin>
+                        <mask>UDPv4_WAN</mask>
+                        <udpv4_wan>
+                            <public_address>HUB_PUBLIC_IP</public_address>
+                            <comm_ports>
+                                <default>
+                                    <host>7400</host>
+                                    <public>7400</public>
+                                </default>
+                            </comm_ports>
+                        </udpv4_wan>
+                    </transport_builtin>
+                </domain_participant_qos>
+            </participant>
+
+            <!-- Fan out all discovered topics/types among connected WAN peers -->
+            <session name="WanForward">
+                <auto_topic_route name="AllForward">
+                    <publish_with_original_info>true</publish_with_original_info>
+                    <input participant="WanRelaySide">
+                        <allow_topic_name_filter>*</allow_topic_name_filter>
+                        <allow_registered_type_name_filter>*</allow_registered_type_name_filter>
+                    </input>
+                    <output participant="WanRelaySide">
+                        <allow_topic_name_filter>*</allow_topic_name_filter>
+                        <allow_registered_type_name_filter>*</allow_registered_type_name_filter>
+                    </output>
+                </auto_topic_route>
+            </session>
+
+            <session name="WanBackward">
+                <auto_topic_route name="AllBackward">
+                    <publish_with_original_info>true</publish_with_original_info>
+                    <input participant="WanRelaySide">
+                        <allow_topic_name_filter>*</allow_topic_name_filter>
+                        <allow_registered_type_name_filter>*</allow_registered_type_name_filter>
+                    </input>
+                    <output participant="WanRelaySide">
+                        <allow_topic_name_filter>*</allow_topic_name_filter>
+                        <allow_registered_type_name_filter>*</allow_registered_type_name_filter>
+                    </output>
+                </auto_topic_route>
+            </session>
+
+        </domain_route>
+    </routing_service>
+</dds>

@@ -1,0 +1,13 @@
+[Unit]
+Description=RTI Cloud Discovery Service daemon
+After=network.target auditd.service
+
+[Service]
+# see man systemd.service
+Type=oneshot
+ExecStart=/opt/scripts/cds/start.sh
+RemainAfterExit=true
+ExecStop=/opt/scripts/cds/stop.sh
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dds xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="http://community.rti.com/schema/7.3.1/dds_security_governance.xsd">
+    <domain_access_rules>
+        
+        <domain_rule> 
+            <domains> 
+                <id>1</id> 
+            </domains>
+            <allow_unauthenticated_participants>false</allow_unauthenticated_participants>
+            <enable_join_access_control>true</enable_join_access_control>
+            <discovery_protection_kind>NONE</discovery_protection_kind>
+            <liveliness_protection_kind>NONE</liveliness_protection_kind>
+            <rtps_protection_kind>SIGN</rtps_protection_kind>
+            <rtps_psk_protection_kind>ENCRYPT</rtps_psk_protection_kind> <!-- ensure this matches the dds.sec.access.rtps_psk_protection_kind in the CDS configuration -->
+            <topic_access_rules>
+                <topic_rule>
+                    <topic_expression>Square</topic_expression>
+                    <enable_discovery_protection>false</enable_discovery_protection> <!-- Enable discovery protection to encrypt discovery traffic for Square topic -->
+                    <enable_read_access_control>true</enable_read_access_control>
+                    <enable_write_access_control>true</enable_write_access_control>
+                    <metadata_protection_kind>NONE</metadata_protection_kind> <!-- Square topic metadata is not encrypted -->
+                    <data_protection_kind>ENCRYPT</data_protection_kind> <!-- Encrypt Square topic data -->
+                </topic_rule>
+                <topic_rule>
+                    <topic_expression>Triangle</topic_expression>
+                    <enable_discovery_protection>false</enable_discovery_protection> <!-- Enable discovery protection to encrypt discovery traffic for Triangle topic -->
+                    <enable_read_access_control>true</enable_read_access_control>
+                    <enable_write_access_control>true</enable_write_access_control>
+                    <metadata_protection_kind>ENCRYPT</metadata_protection_kind> <!-- Encrypt metadata for Triangles in addition to payload -->
+                    <data_protection_kind>ENCRYPT</data_protection_kind> <!-- Encrypt data for Triangles -->
+                </topic_rule>
+                <topic_rule>
+                    <topic_expression>*</topic_expression>
+                    <enable_discovery_protection>false</enable_discovery_protection>
+                    <enable_read_access_control>false</enable_read_access_control>
+                    <enable_write_access_control>false</enable_write_access_control>
+                    <metadata_protection_kind>NONE</metadata_protection_kind>
+                    <data_protection_kind>NONE</data_protection_kind>
+                </topic_rule>
+            </topic_access_rules>
+        </domain_rule>
+
+    </domain_access_rules>
+</dds>

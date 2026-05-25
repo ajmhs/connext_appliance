@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dds xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:noNamespaceSchemaLocation="https://community.rti.com/schema/7.7.0/rti_dds_qos_profiles.xsd"
+     version="7.7.0">
+
+    <qos_library name="HospitalSecureWanDemoLib">
+
+        <!-- Internal hospital participant -->
+        <qos_profile name="HospitalInternalBase"
+                     base_name="BuiltinQosLib::Generic.StrictReliable">
+            <base_name>
+                <element>BuiltinQosSnippetLib::Transport.UDP.WAN</element>
+                <element>BuiltinQosSnippetLib::Transport.UDP.AvoidIPFragmentation</element>
+                <element>BuiltinQosSnippetLib::Optimization.Discovery.Common</element>
+                <element>BuiltinQosSnippetLib::Feature.Security.Enable</element>
+            </base_name>
+
+            <domain_participant_qos>
+                <transport_builtin>
+                    <mask>UDPv4_WAN</mask>
+                    <udpv4_wan>
+                        <comm_ports>
+                            <default>
+                                <host>7401</host>
+                            </default>
+                        </comm_ports>
+                    </udpv4_wan>
+                </transport_builtin>
+
+                <discovery>
+                    <initial_peers>
+                        <element>rtps@udpv4_wan://HUB_PUBLIC_IP:HUB_PUBLIC_PORT</element>                        
+                    </initial_peers>
+                    <multicast_receive_addresses/>
+                </discovery>
+
+                <property>
+                    <value>
+                        <!-- Full DDS-Secure authentication/access-control -->
+                        <element>
+                            <name>dds.sec.auth.identity_ca</name>
+                            <value>file:./security/root-ca-cert.pem</value>
+                        </element>
+                        <element>
+                            <name>dds.sec.auth.identity_certificate</name>
+                            <value>file:./security/a-cert.pem</value>
+                        </element>
+                        <element>
+                            <name>dds.sec.auth.private_key</name>
+                            <value>file:./security/a-key.pem</value>
+                        </element>
+                        <element>
+                            <name>dds.sec.access.permissions_ca</name>
+                            <value>file:./security/root-ca-cert.pem</value>
+                        </element>
+                        <element>
+                            <name>dds.sec.access.governance</name>
+                            <value>file:./security/governance.p7s</value>
+                        </element>
+                        <element>
+                            <name>dds.sec.access.permissions</name>
+                            <value>file:./security/permissions.p7s</value>
+                        </element>
+
+                        <!-- PSK protection for CDS announcements / WAN binding pings -->
+                        <element>
+                            <name>dds.sec.crypto.rtps_psk_secret_passphrase</name>
+                            <value>data:,0:DGF1fq4fOmLCea06zV5z9JmXLqbw9XOopJpxCMaThCOx5XG</value>
+                        </element>
+                        <element>
+                            <name>dds.sec.crypto.rtps_psk_symmetric_cipher_algorithm</name>
+                            <value>AES256+GCM</value>
+                        </element>
+                        <element>
+                            <name>dds.sec.access.rtps_psk_protection_kind</name>
+                            <value>ENCRYPT</value>
+                        </element>
+                    </value>
+                </property>
+
+            </domain_participant_qos>
+        </qos_profile>        
+
+    </qos_library>
+</dds>

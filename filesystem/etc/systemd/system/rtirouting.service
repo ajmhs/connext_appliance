@@ -1,0 +1,13 @@
+[Unit]
+Description=RTI routing service daemon
+After=network.target auditd.service
+
+[Service]
+# see man systemd.service
+Type=oneshot
+ExecStart=/opt/scripts/rs/start.sh
+RemainAfterExit=true
+ExecStop=/opt/scripts/rs/stop.sh
+
+[Install]
+WantedBy=multi-user.target

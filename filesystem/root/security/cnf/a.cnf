@@ -1,0 +1,10 @@
+prompt                 = no
+distinguished_name     = req_distinguished_name
+
+[ req_distinguished_name ]
+countryName            = US
+stateOrProvinceName    = CA
+localityName           = Sunnyvale
+organizationName       = My Company
+emailAddress           = identity_ca@mycompany.com
+commonName             = App_A

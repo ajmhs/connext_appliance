@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+
+<!-- (c) Copyright, Real-Time Innovations, 2026.  All rights reserved.
+RTI grants Licensee a license to use, modify, compile, and create derivative
+works of the software solely for use with RTI Connext DDS. Licensee may
+redistribute copies of the software provided that all such copies are subject
+to this license. The software is provided "as is", with no warranty of any
+type, including any warranty for fitness for any purpose. RTI is under no
+obligation to maintain or support the software. RTI shall not be liable for
+any incidental or consequential damages arising out of the use or inability
+to use the software. -->
+
+<dds  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="http://community.rti.com/schema/7.3.1/rti_cloud_discovery_service.xsd">
+            
+    <cloud_discovery_service name="HospitalSecureCDS">
+        <transport>
+            <element>
+                <alias>builtin.udpv4_wan</alias>
+                <receive_port>7400</receive_port>
+                <property>
+                    <element>
+                        <name>dds.transport.UDPv4_WAN.builtin.public_address</name>
+                        <value>192.168.1.1</value>
+                    </element>
+                </property>
+            </element>
+        </transport>
+
+        <forwarder>
+            <event>
+                <new_or_change_participant_announcements>5</new_or_change_participant_announcements>
+                <min_new_or_change_participant_announcements_period>
+                    <sec>1</sec>
+                    <nanosec>0</nanosec>
+                </min_new_or_change_participant_announcements_period>
+                <max_new_or_change_participant_announcements_period>
+                    <sec>5</sec>
+                    <nanosec>0</nanosec>
+                </max_new_or_change_participant_announcements_period>
+            </event>
+        </forwarder>
+
+        <security>
+            <property>
+                <element>
+                    <name>dds.sec.crypto.rtps_psk_secret_passphrase</name>
+                    <value>data:,0:DGF1fq4fOmLCea06zV5z9JmXLqbw9XOopJpxCMaThCOx5XG</value>
+                </element>
+                <element>
+                    <name>dds.sec.crypto.rtps_psk_symmetric_cipher_algorithm</name>
+                    <value>AES256+GCM</value>
+                </element>
+                <element>
+                    <name>dds.sec.access.rtps_psk_protection_kind</name>
+                    <value>ENCRYPT</value>
+                </element>
+            </property>
+        </security>
+    </cloud_discovery_service>
+
+</dds>

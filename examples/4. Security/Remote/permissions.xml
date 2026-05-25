@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<dds xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="http://community.rti.com/schema/7.3.1/dds_security_permissions.xsd">
+    <permissions>
+        <grant name="Remote_Participant">
+            <!-- This subject name needs to exactly match the value in the corresponding identity cert. -->
+            <subject_name>C=US, ST=CA, L=Sunnyvale, O=My Company, CN=App_B</subject_name>
+            <validity>
+                <!-- Format is CCYY-MM-DDThh:mm:ss[Z|(+|-)hh:mm] in GMT -->
+                <not_before>2025-10-17T12:20:55</not_before>
+                <not_after>2035-10-17T12:20:55</not_after>
+            </validity>
+            
+            <!-- Allow remote participant publish access ONLY to Square and Triangle topics on Domain 1-->
+            <allow_rule>
+                <domains>
+                    <id>1</id>
+                </domains>
+                <publish>
+                    <partitions>
+                        <partition>*</partition>
+                    </partitions>
+                    <topics>
+                        <topic>Square</topic>
+                        <topic>Triangle</topic>
+                    </topics>
+                </publish>
+            </allow_rule>
+            <default>DENY</default>
+        </grant>
+    </permissions>
+</dds>
