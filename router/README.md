@@ -199,9 +199,9 @@ Webmin provides a GUI to manage the appliance services.
 This stage involves moving the RTI binaries onto the board and setting the environment.
 
 You should have the following packages installed:
-rti_security_plugins-7.3.1.2-target-openssl-3.5-armv8Linux4gcc7.3.0.rtipkg
-rti_real_time_wan_transport-7.3.1.2-target-armv8Linux4gcc7.3.0.rtipkg 
-rti_cloud_discovery_service-7.3.1.2-target-armv8Linux4gcc7.3.0.rtipkg <- This package is unavailable for download directly - contact your sales team for more information
+ - rti_security_plugins-7.3.1.2-target-openssl-3.5-armv8Linux4gcc7.3.0.rtipkg
+ - rti_real_time_wan_transport-7.3.1.2-target-armv8Linux4gcc7.3.0.rtipkg 
+ - rti_cloud_discovery_service-7.3.1.2-target-armv8Linux4gcc7.3.0.rtipkg  (*This package is unavailable for download directly - contact your sales team for more information*)
 
 1. **Directory Structure:**
    ```bash
