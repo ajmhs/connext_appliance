@@ -22,9 +22,9 @@ This guide provides a step-by-step workflow to transform a [BananaPi BPI-R3](htt
     - RTI Routing Service
     - RTI Cloud Discovery Service
     - RTI Real-Time WAN Protocol libraries
+    - RTI Security Plugins
     - RTI DDS Spy / Ping
 - **Software:** Etcher or `dd` for flashing, SSH client (PuTTY or Terminal).
-
 
 Banana Pi BPI-R3 Router board with MediaTek MT7986(Filogic 830) quad core ARM A53 + MT7531A chip design ,2G DDR RAM ,8G eMMC flash onboard,It is a very high performance open source router development board,support Wi-Fi 6/6E 2.4G wifi use MT7975N and 5G wifi use MT7975P, support 2 SFP 2.5GbE port, and 5 GbE network port.
 
