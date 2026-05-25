@@ -1,6 +1,6 @@
 # User Guide: Building a Connext Appliance on BananaPi BPI-R3
 
-This guide provides a step-by-step workflow to transform a BananaPi BPI-R3 into a dedicated RTI Connext Appliance. This setup includes a unified network bridge for wired and wireless interfaces, Webmin for management, and the deployment of RTI Connext professional tools.
+This guide provides a step-by-step workflow to transform a [BananaPi BPI-R3](https://docs.banana-pi.org/en/BPI-R3/BananaPi_BPI-R3) into a dedicated RTI Connext Appliance. This setup includes a unified network bridge for wired and wireless interfaces, Webmin for management, and the deployment of RTI Connext professional tools.
 
 ---
 
@@ -17,7 +17,7 @@ This guide provides a step-by-step workflow to transform a BananaPi BPI-R3 into 
 ---
 
 ## 1. Prerequisites
-- **Hardware:** BananaPi BPI-R3, MicroSD card (16GB+), 12V/2A DC Power Supply.
+- **Hardware:** [BananaPi BPI-R3](https://docs.banana-pi.org/en/BPI-R3/BananaPi_BPI-R3), MicroSD card (16GB+), 12V/2A DC Power Supply.
 - **RTI Assets:** Binaries for `armv8Linux4.19gcc8.3.0` (or matching your kernel version) for:
     - RTI Routing Service
     - RTI Cloud Discovery Service
@@ -25,12 +25,19 @@ This guide provides a step-by-step workflow to transform a BananaPi BPI-R3 into 
     - RTI DDS Spy / Ping
 - **Software:** Etcher or `dd` for flashing, SSH client (PuTTY or Terminal).
 
+
+Banana Pi BPI-R3 Router board with MediaTek MT7986(Filogic 830) quad core ARM A53 + MT7531A chip design ,2G DDR RAM ,8G eMMC flash onboard,It is a very high performance open source router development board,support Wi-Fi 6/6E 2.4G wifi use MT7975N and 5G wifi use MT7975P, support 2 SFP 2.5GbE port, and 5 GbE network port.
+
+![BananaPi BPI-R3](../images/S5b8c6facdb2d424e9429324b7f8c7b60j.webp)
+
+The MT7986(Filogic 830) integrates four Arm Cortex-A53 cores up to 2GHz with up to 18,000 DMIPs of processing power and 6Gbps of dual 4x4 Wi-Fi 6/6E connectivity. It has two 2.5g Ethernet interfaces and serial peripheral interfaces (SPI). Filogic 830‘s built-in hardware acceleration engine enables fast and reliable Wi-Fi offloading and wireless network connection. In addition, the chip supports Mediatek FastPath™ technology, which is suitable for games, AR/VR and other low-latency applications. Wi-fi 6E has many advantages over its predecessors, including lower latency, larger bandwidth capacity and faster transmission rates. Wireless network devices supporting the 6GHz band mainly use 160MHz wide channel and 6GHz uncongested bandwidth to provide multigigabit transmission and low-latency wi-fi connection, providing reliable wireless network for streaming media, games, AR/VR and other applications.
+
 ---
 
 ## Stage 1: Image Selection and Flashing
-Frank-W’s repository provides specialized kernels and U-Boot for the BPI-R3.
+[Frank-W’s repository](https://github.com/frank-w/BPI-Router-Images) provides specialized kernels and U-Boot for the BPI-R3.
 
-I tried to make this work inside a docker container to encapsulate the pre-requeseites, but the build script is designed for bare-metal host execution. Docker adds unnecessary complexity here because of
+I tried to make this work inside a docker container to encapsulate the pre-requesites, but the build script is designed for bare-metal host execution. Docker adds unnecessary complexity here due to:
  - Loop devices — losetup requires /dev/loop* devices, which aren't available in standard containers
  - Mount operations — The script uses mount and partprobe, which require elevated kernel capabilities
  - binfmt_misc — The ARM QEMU registration happens at the kernel level and varies between host and container
