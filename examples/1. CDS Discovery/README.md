@@ -4,6 +4,23 @@ Traditional DDS discovery relies on UDP Multicast (the "shout-and-listen" method
 * **The Appliance Solution:** By hosting the **Cloud Discovery Service (CDS)**, your appliance acts as a "rendezvous point." Instead of shouting to the whole network, applications simply check in with the appliance (via unicast) to find their peers.
 * **Transformative Impact:** It enables dynamic discovery in a "Zero-Multicast" environment without requiring you to manually hardcode every IP address in the system.
 
+```mermaid
+graph TD
+    subgraph "The Problem: Traditional Multicast (Blocked)"
+        A1[Node A] -->|Multicast Shout| Barrier((Hospital IT Network Barrier))
+        B1[Node B] -->|Multicast Shout| Barrier
+        style Barrier fill:#ffcccc,stroke:#b30000,stroke-width:2px
+    end
+
+    subgraph "The Solution: CDS Unicast (Allowed)"
+        A2[Node A] -->|Targeted Unicast to Port 7400| CDS[CDS Appliance<br>192.168.1.1]
+        B2[Node B] -->|Targeted Unicast to Port 7400| CDS
+        CDS -. Relays Peer Info .-> A2
+        CDS -. Relays Peer Info .-> B2
+        style CDS fill:#d4edda,stroke:#28a745,stroke-width:2px
+    end
+```
+
 In this example, nodes use unicast UDPv4 discovery through Cloud Discovery Service (CDS) instead of multicast discovery.
  - The nodes use qos.xml to configure their DomainParticipant discovery behavior.
  - The CDS process uses cds.xml to decide where it listens for participant announcements.
@@ -105,6 +122,36 @@ This tells CDS to listen on UDP port 7400 for participant announcements.
 
 ### How the nodes and CDS interact
 
+```mermaid
+sequenceDiagram
+    autonumber
+    participant NodeA as Node A (Client)
+    participant CDS as CDS Appliance (192.168.1.1:7400)
+    participant NodeB as Node B (Client)
+
+    Note over CDS: Step 1: CDS starts & listens on port 7400
+    Note over NodeA, NodeB: Step 2: Nodes launch with 'RouterCDSTest' profile
+
+    rect rgb(240, 248, 255)
+        Note over NodeA, CDS: Phase 1: Unicast Registration
+        NodeA->>CDS: Step 3: Sends Announcement (I am Node A + my locators)
+        NodeB->>CDS: Step 3: Sends Announcement (I am Node B + my locators)
+    end
+
+    rect rgb(230, 245, 230)
+        Note over CDS, NodeB: Phase 2: CDS Routing & Discovery Forwarding
+        CDS->>NodeB: Step 4: Forwards Node A's announcement
+        CDS->>NodeA: Step 4: Forwards Node B's announcement
+    end
+
+    Note over NodeA, NodeB: Step 5: Nodes exchange endpoint info & match topics
+
+    rect rgb(255, 243, 2cd)
+        Note over NodeA, NodeB: Phase 3: Direct Communication (CDS Bypassed)
+        NodeA->>NodeB: Step 6: Steady-State User Data Flows Directly
+        NodeB->>NodeA: Step 6: Steady-State User Data Flows Directly
+    end
+```
 
 #### Step 1: CDS starts
 
@@ -183,6 +230,22 @@ So discovery becomes:
 An important Connext rule is that participants do not exchange peer lists with each other. So Node A knowing CDS and Node B knowing CDS does not mean A directly learns B from B’s peer list. Instead, CDS is the component that receives and forwards the participant announcements.
 
 #### Will the nodes discover each other directly?
+
+```mermaid
+graph LR
+    subgraph "Discovery Path (Control Plane Only)"
+        A1[Node A] -->|Port 7400 Unicast| CDS[CDS Directory Service]
+        B1[Node B] -->|Port 7400 Unicast| CDS
+    end
+
+    subgraph "Steady-State Communication (Data Plane)"
+        A2[Node A] <--> |Direct Peer-to-Peer / Ephemeral Ports| B2[Node B]
+    end
+
+    style CDS fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    style A2 fill:#e2e3e5,stroke:#383d41
+    style B2 fill:#e2e3e5,stroke:#383d41
+```
 
 Not initially.
 They are configured to contact CDS, not each other.
