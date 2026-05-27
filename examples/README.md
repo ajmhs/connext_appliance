@@ -1,7 +1,7 @@
 ## Examples  
-Once the router has been configured, with all the software installed, we can now get to testing out the functionality and design our **Product Area Network**
+Once the router has been configured, with all the software installed, we can now get to testing out the functionality and work though some specific examples of what can be acheived.
 
-Building a **Connext router appliance** on a device like the BananaPi BPI-R3 allows us to create a bespoke, hardware-isolated "connectivity gateway" that addresses the three major IT constraints identified in the RTI blog post: **multicast prohibition**, **port exhaustion**, and **security rigidity**.
+Building a **Connext router appliance** on a device like the BananaPi BPI-R3 allows us to create a bespoke, hardware-isolated "connectivity gateway" that addresses the major IT constraints identified in the RTI blog post: **multicast prohibition**, **port exhaustion**, **Navigating Complex Firewalls** and **security rigidity**. 
 
 In a hospital environment—where IT departments treat medical devices as "black boxes" and apply restrictive network policies—this appliance acts as a transformative "bridge" that allows complex distributed systems to function without requiring the IT staff to reconfigure the entire hospital network.
 
