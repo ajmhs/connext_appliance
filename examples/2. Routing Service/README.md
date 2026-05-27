@@ -4,6 +4,27 @@ Standard DDS assigns unique ports to every application (DomainParticipant), whic
 * **The Appliance Solution:** The **Routing Service** acts as a "fanout node" or aggregator. It collects all DDS traffic from the local subnet and tunnels it through a single, predetermined port to the remote destination. 
 * **Transformative Impact:** You can scale to dozens of devices locally while appearing as only **one connection** to the IT firewall, drastically reducing the "surface area" you need to negotiate with IT.
 
+```mermaid
+graph TD
+    subgraph "The Problem: Port Exhaustion (Blocked by IT)"
+        A1[Device 1] -->|Port 7410| FW1((IT Firewall))
+        A2[Device 2] -->|Port 7412| FW1
+        A3[Device 3] -->|Port 7414| FW1
+        FW1 -->|Traffic Blocked!| X[Remote Site]
+        style FW1 fill:#ffcccc,stroke:#b30000,stroke-width:2px
+    end
+
+    subgraph "The Solution: Appliance Routing Service Aggregation"
+        B1[Device 1] -->|Local LAN| RS[Edge Routing Service]
+        B2[Device 2] -->|Local LAN| RS
+        B3[Device 3] -->|Local LAN| RS
+        RS -->|Single Port 7400 Tunnel| FW2((IT Firewall))
+        FW2 -->|Traffic Allowed| Hub[Wan Fan-out Hub]
+        style RS fill:#d4edda,stroke:#28a745,stroke-width:2px
+        style FW2 fill:#d4edda,stroke:#28a745,stroke-width:1px
+    end
+```
+
 This example is a workable pattern for RTI Connext Professional Routing Service using Real-Time WAN Transport (UDPv4_WAN):
 
  - Edge/Gateway config: collects DDS traffic from the local LAN/domain and forwards it through one predetermined WAN UDP port to a remote relay.
@@ -12,6 +33,32 @@ This example is a workable pattern for RTI Connext Professional Routing Service 
 This follows the documented Routing Service WAN-gateway pattern and the relayed edge-to-edge deployment pattern, and uses the documented single-port comm_ports mapping for UDPv4_WAN. It also uses auto_topic_route with * filters to propagate all discovered topics/types. RTI’s documentation show this exact architectural split: a LAN-side participant plus a WAN-side participant on the edge, and a WAN-only participant on the relay/fan-out side.
 
 ### Edge / local-subnet collector configuration
+
+```mermaid
+graph LR
+    subgraph "Local Subnet (Site A) - Domain 0"
+        AppA1[LAN App 1] <-->|DDS Data| EdgeRS
+        AppA2[LAN App 2] <-->|DDS Data| EdgeRS
+    end
+
+    subgraph "Edge Collector Appliance"
+        EdgeRS[Routing Service]
+        InternalPart[LAN Participant<br>Domain 0] <--> Route{Auto Topic Route<br>'*'}
+        Route <--> ExternalPart[WAN Participant<br>Domain 1<br>UDPv4_WAN]
+    end
+
+    subgraph "Public Internet - Domain 1"
+        ExternalPart <-->|Single WAN Port: 7400| HubPart
+    end
+
+    subgraph "Remote Central Hub"
+        HubPart[WAN Relay Participant<br>Domain 1<br>UDPv4_WAN] <--> CentralHub[WanFanoutHub]
+    end
+
+    style EdgeRS fill:#f8f9fa,stroke:#6c757d,stroke-dasharray: 5 5
+    style CentralHub fill:#f8f9fa,stroke:#6c757d,stroke-dasharray: 5 5
+    style Route fill:#fff3cd,stroke:#ffc107
+```
 
 [EdgeCollector/rs.xml](EdgeCollector/rs.xml)
 
@@ -40,6 +87,31 @@ Replace:
 If the host is directly public, host and public can be the same.
 
 ### Important deployment notes
+
+```mermaid
+graph TD
+    subgraph "Edge Site (Internal Network)"
+        Apps[Local DDS Apps<br>Domain 0] 
+        -->|1. Local Discovery & Data| Edge[Edge Collector<br>rs.xml]
+    end
+
+    subgraph "Edge IT Firewall"
+        Edge -->|2. Outbound WAN Connection Only| FW_Edge[Firewall / NAT]
+    end
+
+    subgraph "Central Cloud / Data Center"
+        FW_Edge -->|3. Port 7400 Unicast| FW_Hub[Hub Firewall / NAT<br>Static Port Forwarding]
+        FW_Hub -->|4. Forwarded to Host Port| Hub[Wan Fan-out Hub<br>rs.xml - Domain 1]
+    end
+
+    subgraph "Remote Edge Site B"
+        Hub -->|5. Relays/Fans-out Data| EdgeB[Remote Edge Gateway B]
+    end
+
+    style Edge fill:#e8f4fd,stroke:#007bff
+    style Hub fill:#e8f4fd,stroke:#007bff
+    style FW_Hub fill:#f8d7da,stroke:#dc3545
+```
 
 #### 1. Single predetermined port
  - On the edge/internal participant, a single receive port is configured with:
