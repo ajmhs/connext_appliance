@@ -1,6 +1,6 @@
 ## Introduction
 
-Building a **Connext router appliance** on a device like the BananaPi BPI-R3 creates a hardware-isolated "connectivity gateway" that addresses the three major IT constraints identified in the [RTI blog post](https://www.rti.com/blog/top-3-tips-to-break-through-hospital-it-silos-with-connext): **multicast prohibition**, **port exhaustion**, and **security rigidity**.
+Building a **Connext router appliance** on a device like the BananaPi BPI-R3 creates a hardware-isolated "connectivity gateway" that addresses the major IT constraints identified in this [RTI blog post](https://www.rti.com/blog/top-3-tips-to-break-through-hospital-it-silos-with-connext): **multicast prohibition**, **port exhaustion**, **navigating complex firewalls** and **security rigidity**.
 
 In a hospital environment—where IT departments treat medical devices as "black boxes" and apply restrictive network policies—this appliance acts as a transformative "bridge" that allows complex distributed systems to function without requiring the IT staff to reconfigure the entire hospital network.
 
