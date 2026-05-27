@@ -1,9 +1,68 @@
 ## Examples  
 Once the router has been configured, with all the software installed, we can now get to testing out the functionality and work though some specific examples of what can be acheived.
 
-Building a **Connext router appliance** on a device like the BananaPi BPI-R3 allows us to create a bespoke, hardware-isolated "connectivity gateway" that addresses the major IT constraints identified in the RTI blog post: **multicast prohibition**, **port exhaustion**, **Navigating Complex Firewalls** and **security rigidity**. 
+Building a **Connext router appliance** on a device like the BananaPi BPI-R3 allows us to create a bespoke, hardware-isolated "connectivity gateway" that addresses the major IT constraints identified in the RTI blog post: **multicast prohibition**, **port exhaustion**, **navigating complex firewalls** and **security rigidity**. 
+
+```mermaid
+graph LR
+    subgraph "Hospital IT Network Constraints & Needs"
+        C1[No Multicast Allowed]
+        C2[Strict Port Limits / Exhaustion]
+        C3[Inbound Firewalls / NAT]
+        C4[Security]
+    end
+
+    subgraph "The Connext Appliance Solutions"
+        Service1["Cloud Discovery Service (CDS)<br>🔗 Example 1"]
+        Service2["Routing Service (WAN Gateway)<br>🔗 Example 2"]
+        Service3["Real-Time WAN Transport<br>🔗 Example 3"]
+        Service4["Security Without Compromise<br>🔗 Example 4"]
+    end
+
+    C1 ==> Service1
+    C2 ==> Service2
+    C3 ==> Service3
+    C4 ==> Service4
+
+    style Service1 fill:#e2e3e5,stroke:#383d41
+    style Service2 fill:#e2e3e5,stroke:#383d41
+    style Service3 fill:#e2e3e5,stroke:#383d41
+    style Service4 fill:#e2e3e5,stroke:#383d41
+```
 
 In a hospital environment—where IT departments treat medical devices as "black boxes" and apply restrictive network policies—this appliance acts as a transformative "bridge" that allows complex distributed systems to function without requiring the IT staff to reconfigure the entire hospital network.
+
+```mermaid
+graph TD
+    Start([Start Here]) --> Ex1
+    
+    subgraph "Phase 1: Local Network Optimization"
+        Ex1["1. CDS Discovery<br>(Zero-Multicast LAN)"] 
+        -->|Concept: Moves from shouting to directory lookup| Ex2
+    end
+
+    subgraph "Phase 2: Enterprise Scaling"
+        Ex2["2. Routing Service<br>(Port Aggregation / Fan-out)"] 
+        -->|Concept: Consolidates local traffic onto one port| Ex3
+    end
+
+    subgraph "Phase 3: Global Connectivity"
+        Ex3["3. Real-Time WAN Transport<br>(NAT Traversal / Remote Center)"]
+        -->|Concept: Secure peer-to-peer over WAN| Ex4
+    end
+
+    subgraph "Phase 4: Applying security"
+        Ex4["4. Security Without Compromise<br>(Securing Real-Time WAN & CDS)"]
+        --> End([Production Deployment])
+    end
+
+    style Start fill:#f8f9fa,stroke:#6c757d
+    style End fill:#d4edda,stroke:#28a745,stroke-width:2px
+    style Ex1 fill:#e8f4fd,stroke:#007bff
+    style Ex2 fill:#e8f4fd,stroke:#007bff
+    style Ex3 fill:#e8f4fd,stroke:#007bff
+    style Ex4 fill:#e1d5e7,stroke:#9673a6,stroke-width:2px
+```
 
 ### 1. Breaking the Multicast Barrier (Cloud Discovery Service)
 Traditional DDS discovery relies on UDP Multicast (the "shout-and-listen" method). However, hospital IT often disables multicast to prevent network congestion.
@@ -36,3 +95,5 @@ IT departments are often hesitant to allow data bridging because of "lateral mov
 * **Transformative Impact:** Even though your appliance is bridging the network, it enforces a **Zero-Trust** model. You can prove to IT that the appliance *only* forwards "Heart Rate" data and strictly blocks any unauthorized commands, satisfying even the most rigid cybersecurity audits.
 
 [Click to open](4.%20Security/README.md)
+
+
