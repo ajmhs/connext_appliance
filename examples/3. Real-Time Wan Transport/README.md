@@ -4,6 +4,23 @@ Hospitals often use Network Address Translation (NAT) and strict firewalls that 
 * **The Appliance Solution:** The **RT/WAN transport** uses UDP hole punching. It allows the appliance to establish a peer-to-peer connection through the firewall by "punching" a path out that the remote side can then use to talk back.
 * **Transformative Impact:** It provides **VPN-like connectivity without the overhead or latency of a VPN**, allowing real-time data to flow across different network segments securely and reliably.
 
+```mermaid
+graph TD
+    subgraph "The Problem: Unsolicited Traffic Dropped"
+        Remote1[Remote Center App] -->|Direct WAN Inbound Connection| FW1(("Hospital Firewall<br>(Strict NAT)"))
+        FW1 -->|Dropped!| Int1[Hospital Internal App]
+        style FW1 fill:#ffcccc,stroke:#b30000,stroke-width:2px
+    end
+
+    subgraph "The Solution: UDP Hole Punching via CDS"
+        Int2[Hospital Internal App] -->|1. Outbound Request| CDS["CDS Appliance<br>(Public Port Forwarded)"]
+        Remote2[Remote Center App] -->|2. Outbound Request| CDS
+        CDS -.->|3. Resolves Reflexive Public IPs| Int2
+        CDS -.->|3. Resolves Reflexive Public IPs| Remote2
+        Int2 <===> |4. Direct Peer-to-Peer STUN Tunnel| Remote2
+        style CDS fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    end
+```
 
 This example shows Real-Time WAN Transport (UDPv4_WAN), Cloud Discovery Service (CDS), and Shapes Demo to demonstrate a hospital-hosted deployment where:
 
@@ -40,31 +57,33 @@ This allows:
  - The hospital participant and remote participant to communicate peer-to-peer over WAN transport
 
 ### Topology
-```text
-            Cloud VM (Remote Publisher)
-      +--------------------------------------+
-      | Shapes Demo (Publish Square)         |
-      | Profile: RemoteMonitorBase           |
-      +------------------+-------------------+
-                         |
-                         | UDPv4_WAN to rtps@udpv4_wan://HUB_PUBLIC_IP:HUB_PUBLIC_PORT
-                         v
-========================= Internet / WAN =========================
-                         ^
-                         |
-          Home Router Public NAT / Firewall (Hospital edge)
-          WAN HUB_PUBLIC_PORT -> LAN 10.101.0.190:7400 (UDP)
-                         |
-------------------------------------------------------------------
-|                        Hospital A LAN                           |
-|                                                                 |
-|   +----------------------------+    +-------------------------+  |
-|   | Cloud Discovery Service    |    | Shapes Demo (Subscriber)|  |
-|   | Host: 10.101.0.190:7400    |    | Profile: HospitalInternalBase |
-|   | public_address=HUB_PUBLIC_IP|   | Subscribe Square        |  |
-|   +----------------------------+    +-------------------------+  |
-|                                                                 |
-------------------------------------------------------------------
+```mermaid
+graph TD
+    subgraph "Public Internet / WAN (Domain 0)"
+        Remote["Cloud VM / Remote Center<br>Shapes Demo (Publish Square)<br>Profile: RemoteMonitorBase"]
+    end
+
+    subgraph "Hospital Edge / Perimeter"
+        FW[["Router Firewall / Static NAT<br>HUB_PUBLIC_PORT ──> 10.101.0.190:7400"]]
+    end
+
+    subgraph "Hospital A LAN (Domain 0)"
+        CDS["Cloud Discovery Service<br>Host IP: 10.101.0.190:7400<br>public_address = HUB_PUBLIC_IP"]
+        InternalApp["Shapes Demo (Subscribe Square)<br>Profile: HospitalInternalBase"]
+    end
+
+    %% Network Flows
+    Remote -->|UDPv4_WAN Traffic| FW
+    FW -->|Forwarded Port 7400| CDS
+    InternalApp -->|UDPv4_WAN Loopback to Public IP| FW
+    
+    %% Eventual Peer-to-Peer Link
+    Remote <.=> |Direct Peer-to-Peer User Data| InternalApp
+
+    style FW fill:#f8d7da,stroke:#dc3545,stroke-width:2px
+    style CDS fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    style Remote fill:#e8f4fd,stroke:#007bff
+    style InternalApp fill:#e8f4fd,stroke:#007bff
 ```
 
 ### Interaction model
@@ -86,10 +105,44 @@ Both participants point to the public CDS address:
 
 Even the internal hospital participant can use the public CDS address in this WAN-oriented demo model. RTI’s WAN documentation describes CDS as being identified by its publicly reachable address for WAN participants.
 
-If the firewall does not support hairpin NAT / loopback NAT, the internal participant may need a different deployment approach. 
+As shown in the Topology Diagram, the Hospital Internal App sends its data up to the public edge firewall before looping back down to the CDS. If your firewall does not support Hairpin NAT, this internal client won't reach the target and a different approach will be needed.
 For this simple demo, the assumption is that Hospital A can reach the CDS public address.
 
 ### How discovery works in this topology
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant HospitalApp as Hospital Internal App
+    participant Router as Firewall / NAT
+    participant CDS as CDS Appliance (Port 7400)
+    participant RemoteApp as Remote Center App
+
+    Note over CDS: Step 1: CDS boots & Router maps public port to it
+
+    rect rgb(240, 248, 255)
+        Note over HospitalApp, CDS: Discovery Registrations (Outbound)
+        HospitalApp->>Router: Step 2: Hits public IP via UDPv4_WAN
+        Router->>CDS: Forwards registration to CDS
+        RemoteApp->>Router: Step 3: Hits public IP from Outside
+        Router->>CDS: Forwards registration to CDS
+    end
+
+    rect rgb(230, 245, 230)
+        Note over CDS, RemoteApp: Address Resolution
+        Note over CDS: Step 4: CDS extracts public mapping (STUN)<br>from the incoming UDP packets
+        CDS-->>Router: Sends peer locators + reflexive IPs
+        Router-->>HospitalApp: Relays remote console details
+        CDS-->>RemoteApp: Sends hospital app details
+    end
+
+    rect rgb(255, 243, 205)
+        Note over HospitalApp, RemoteApp: Peer-to-Peer Communication
+        HospitalApp<->RemoteApp: Step 5: Direct bidirectional user data flows safely!
+        Note over HospitalApp, RemoteApp: (CDS is now bypassed in the data stream)
+    end
+```
+
 #### Step 1: CDS starts inside Hospital A
 
 CDS listens on:
