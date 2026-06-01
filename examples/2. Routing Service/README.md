@@ -1,4 +1,34 @@
-## Solving Port Exhaustion (Routing Service)
+# Example 2: Routing Service
+
+> **Port aggregation and WAN gateway patterns**
+
+⏱️ **Time Required:** 20-30 minutes  
+📊 **Difficulty:** Intermediate  
+🔗 **Prerequisites:** Example 1 (CDS Discovery)  
+📍 **You are here:** Phase 2 of 4 → Enterprise Scaling
+
+---
+
+## 📋 TL;DR
+
+**What you'll accomplish:** Configure Routing Service to aggregate multiple local DDS participants onto a single WAN port, reducing firewall complexity.
+
+**Key takeaway:** Routing Service acts as a "funnel"—collecting many local data streams and sending them through one managed port to remote sites.
+
+---
+
+## What You'll Learn
+
+By the end of this example, you'll understand:
+- ✅ Port aggregation for IT firewall compliance
+- ✅ Edge collector and central hub deployment patterns
+- ✅ Domain bridging with auto-topic routing
+- ✅ RT/WAN transport for WAN connectivity
+
+---
+
+## The Challenge
+
 Standard DDS assigns unique ports to every application (DomainParticipant), which can quickly consume hundreds of ports—something IT departments strictly forbid.
 * **The Problem:** IT may only grant you a single open port (e.g., port 7400) to communicate between wards or floors.
 * **The Appliance Solution:** The **Routing Service** acts as a "fanout node" or aggregator. It collects all DDS traffic from the local subnet and tunnels it through a single, predetermined port to the remote destination. 
@@ -6,22 +36,22 @@ Standard DDS assigns unique ports to every application (DomainParticipant), whic
 
 ```mermaid
 graph TD
-    subgraph "The Problem: Port Exhaustion (Blocked by IT)"
-        A1[Device 1] -->|Port 7410| FW1((IT Firewall))
-        A2[Device 2] -->|Port 7412| FW1
-        A3[Device 3] -->|Port 7414| FW1
-        FW1 -->|Traffic Blocked!| X[Remote Site]
-        style FW1 fill:#ffcccc,stroke:#b30000,stroke-width:2px
-    end
-
     subgraph "The Solution: Appliance Routing Service Aggregation"
         B1[Device 1] -->|Local LAN| RS[Edge Routing Service]
         B2[Device 2] -->|Local LAN| RS
         B3[Device 3] -->|Local LAN| RS
         RS -->|Single Port 7400 Tunnel| FW2((IT Firewall))
         FW2 -->|Traffic Allowed| Hub[Wan Fan-out Hub]
-        style RS fill:#d4edda,stroke:#28a745,stroke-width:2px
-        style FW2 fill:#d4edda,stroke:#28a745,stroke-width:1px
+        style RS fill:#A4D65E,stroke:#004C97,stroke-width:2px,color:#000
+        style FW2 fill:#A4D65E,stroke:#004C97,stroke-width:1px,color:#000
+    end
+
+    subgraph "The Problem: Port Exhaustion (Blocked by IT)"
+        A1[Device 1] -->|Port 7410| FW1((IT Firewall))
+        A2[Device 2] -->|Port 7412| FW1
+        A3[Device 3] -->|Port 7414| FW1
+        FW1 -->|Traffic Blocked!| X[Remote Site]
+        style FW1 fill:#FFA300,stroke:#ED8B00,stroke-width:2px,color:#000
     end
 ```
 
@@ -55,9 +85,9 @@ graph LR
         HubPart[WAN Relay Participant<br>Domain 1<br>UDPv4_WAN] <--> CentralHub[WanFanoutHub]
     end
 
-    style EdgeRS fill:#f8f9fa,stroke:#6c757d,stroke-dasharray: 5 5
-    style CentralHub fill:#f8f9fa,stroke:#6c757d,stroke-dasharray: 5 5
-    style Route fill:#fff3cd,stroke:#ffc107
+    style EdgeRS fill:#BBBCBC,stroke:#63666A,stroke-dasharray: 5 5,color:#000
+    style CentralHub fill:#BBBCBC,stroke:#63666A,stroke-dasharray: 5 5,color:#000
+    style Route fill:#FFA300,stroke:#ED8B00,color:#000
 ```
 
 [EdgeCollector/rs.xml](EdgeCollector/rs.xml)
@@ -66,10 +96,10 @@ Use this on each site that should gather local DDS traffic and tunnel it to the 
 
 Replace:
 
-    LOCAL_DOMAIN_ID with your LAN DDS domain
-    REMOTE_HUB_PUBLIC_IP with the public IP/DNS of the remote hub
-    EDGE_WAN_HOST_PORT with the local UDP port bound on this gateway
-    REMOTE_HUB_PUBLIC_PORT with the hub’s public UDP port
+ - LOCAL_DOMAIN_ID with your LAN DDS domain
+ - REMOTE_HUB_PUBLIC_IP with the public IP/DNS of the remote hub
+ - EDGE_WAN_HOST_PORT with the local UDP port bound on this gateway
+ - REMOTE_HUB_PUBLIC_PORT with the hub’s public UDP port
 
 
 ### Remote hub / fan-out configuration
@@ -80,9 +110,9 @@ Use this on the central public node. It acts as a WAN relay/fan-out for all conn
 
 Replace:
 
-    HUB_PUBLIC_IP with the public IP/DNS of the relay host
-    HUB_HOST_PORT with the local UDP port on the relay host
-    HUB_PUBLIC_PORT with the externally reachable forwarded/public UDP port
+ - HUB_PUBLIC_IP with the public IP/DNS of the relay host
+ - HUB_HOST_PORT with the local UDP port on the relay host
+ - HUB_PUBLIC_PORT with the externally reachable forwarded/public UDP port
 
 If the host is directly public, host and public can be the same.
 
@@ -108,9 +138,9 @@ graph TD
         Hub -->|5. Relays/Fans-out Data| EdgeB[Remote Edge Gateway B]
     end
 
-    style Edge fill:#e8f4fd,stroke:#007bff
-    style Hub fill:#e8f4fd,stroke:#007bff
-    style FW_Hub fill:#f8d7da,stroke:#dc3545
+    style Edge fill:#00B5E2,stroke:#004C97,color:#000
+    style Hub fill:#00B5E2,stroke:#004C97,color:#000
+    style FW_Hub fill:#FFA300,stroke:#ED8B00,color:#000
 ```
 
 #### 1. Single predetermined port
@@ -149,3 +179,22 @@ That separation is a common Routing Service WAN-gateway pattern. Keep the WAN-si
   - It does not magically capture traffic from applications that cannot discover the local gateway.
   - In practice, local applications must be on the same DDS domain and able to discover the gateway Routing Service participant.
 
+---
+
+## 📚 Key Takeaways
+
+- ✅ Routing Service aggregates multiple participants onto a single WAN port
+- ✅ Edge collectors bridge local LAN domains to WAN domains
+- ✅ Central hubs fan out WAN traffic to multiple remote sites
+- ✅ Auto-topic routing (`*`) automatically propagates all discovered topics
+- ✅ RT/WAN transport enables single-port communication across WANs
+
+---
+
+## What's Next?
+
+**→ Continue to [Example 3: Real-Time WAN Transport](../3.%20Real-Time%20Wan%20Transport/README.md)**
+
+Learn how to enable peer-to-peer connectivity through NAT and firewalls using RT/WAN transport and UDP hole punching.
+
+[← Back to Examples](../README.md) | **Connext Router Appliance Examples**

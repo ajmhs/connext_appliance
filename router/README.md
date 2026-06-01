@@ -81,11 +81,11 @@ user: root password: bananapi
   systemctl restart ssh
   ```
 4. **Configure Time:**
-  Set the time manually: timedatectl set-time "2026-04-17 12:35:00"
-  apt install systemd-timesyncd
-  Choose a timezome: timedatectl list-timezones | grep [Your country]
-  timedatectl set-timezone [select appropriate timezone]
-  timedatectl set-ntp TRUE
+ - Set the time manually: ```timedatectl set-time "YYYY-MM-DD HH:MM:SS"```
+ - ```apt install systemd-timesyncd```
+ - Choose a timezome: ```timedatectl list-timezones | grep [Your country]```
+ - ```timedatectl set-timezone [select appropriate timezone]```
+ - ```timedatectl set-ntp TRUE```
 
 3. **Update Repositories and install additional packages:**
    ```bash
@@ -312,3 +312,5 @@ You should have the following packages installed:
 - **Updating Images:** Use `apt update` regularly.
 - **Log Monitoring:** Check `/var/webmin/miniserv.log` for Webmin issues and `journalctl -u hostapd` for WiFi issues.
 - **RTI Updates:** When updating RTI components, simply update the `NDDSHOME` path in `/etc/profile.d/rti_connext.sh`.
+
+[← Back to Main](../README.md) | **Router Build Guide**

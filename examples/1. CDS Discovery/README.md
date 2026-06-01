@@ -1,35 +1,82 @@
-## Breaking the Multicast Barrier (Cloud Discovery Service)
+# Example 1: Cloud Discovery Service (CDS)
+
+> **Breaking the multicast barrier in zero-multicast networks**
+
+⏱️ **Time Required:** 15-20 minutes  
+📊 **Difficulty:** Beginner  
+🔗 **Prerequisites:** None (standalone example)  
+📍 **You are here:** Phase 1 of 4 → Local Network Optimization
+
+---
+
+## 📋 TL;DR
+
+**What you'll accomplish:** Configure DDS applications to discover each other without multicast using Cloud Discovery Service as a rendezvous point.
+
+**Key takeaway:** CDS acts like a "phone directory" for DDS participants—instead of shouting to everyone on the network (multicast), applications simply check in with CDS to find their peers.
+
+---
+
+## What You'll Learn
+
+By the end of this example, you'll understand:
+- ✅ How DDS discovery works without multicast
+- ✅ Configuring participants to use unicast discovery through CDS
+- ✅ The role of CDS in the discovery vs. data plane
+- ✅ How to verify discovery using QoS profiles
+
+---
+
+## The Challenge
+
 Traditional DDS discovery relies on UDP Multicast (the "shout-and-listen" method). However, hospital IT often disables multicast to prevent network congestion.
-* **The Problem:** Without multicast, applications can’t "see" each other to start communicating.
-* **The Appliance Solution:** By hosting the **Cloud Discovery Service (CDS)**, your appliance acts as a "rendezvous point." Instead of shouting to the whole network, applications simply check in with the appliance (via unicast) to find their peers.
-* **Transformative Impact:** It enables dynamic discovery in a "Zero-Multicast" environment without requiring you to manually hardcode every IP address in the system.
+
+**The problem:** Without multicast, applications can't "see" each other to start communicating.
+
+## The Solution
+
+By hosting **Cloud Discovery Service (CDS)** on your appliance, it acts as a "rendezvous point." Instead of shouting to the whole network, applications simply check in with the appliance (via unicast) to find their peers.
+
+> **💡 Key Concept:** CDS is **only for discovery**, not data transfer. Once nodes find each other, they communicate directly peer-to-peer.
+
+## How It Works: Problem vs. Solution
 
 ```mermaid
 graph TD
-    subgraph "The Problem: Traditional Multicast (Blocked)"
-        A1[Node A] -->|Multicast Shout| Barrier((Hospital IT Network Barrier))
-        B1[Node B] -->|Multicast Shout| Barrier
-        style Barrier fill:#ffcccc,stroke:#b30000,stroke-width:2px
-    end
-
     subgraph "The Solution: CDS Unicast (Allowed)"
         A2[Node A] -->|Targeted Unicast to Port 7400| CDS[CDS Appliance<br>192.168.1.1]
         B2[Node B] -->|Targeted Unicast to Port 7400| CDS
         CDS -. Relays Peer Info .-> A2
         CDS -. Relays Peer Info .-> B2
-        style CDS fill:#d4edda,stroke:#28a745,stroke-width:2px
+        style CDS fill:#A4D65E,stroke:#004C97,stroke-width:2px,color:#000
+    end
+
+    subgraph "The Problem: Traditional Multicast (Blocked)"
+        A1[Node A] -->|Multicast Shout| Barrier((Hospital IT Network Barrier))
+        B1[Node B] -->|Multicast Shout| Barrier
+        style Barrier fill:#FFA300,stroke:#ED8B00,stroke-width:2px,color:#000
     end
 ```
 
-In this example, nodes use unicast UDPv4 discovery through Cloud Discovery Service (CDS) instead of multicast discovery.
- - The nodes use qos.xml to configure their DomainParticipant discovery behavior.
- - The CDS process uses cds.xml to decide where it listens for participant announcements.
- - The nodes do not discover each other directly at startup.
- - Instead, each node sends its participant announcements to CDS at 192.168.1.1:7400.
- - CDS receives those announcements and forwards discovery information so the nodes can learn about each other.
- - Once discovery is complete, the applications can communicate directly; CDS is primarily a discovery directory/forwarder, not the user-data path in this configuration.
+---
 
-### What the qos.xml does
+## Understanding the Configuration
+
+This example demonstrates unicast UDPv4 discovery through Cloud Discovery Service (CDS) instead of multicast discovery.
+
+**How it works:**
+1. The nodes use [Client/USER_QOS_PROFILES.xml](Client/USER_QOS_PROFILES.xml) to configure their DomainParticipant discovery behavior
+2. The CDS process uses [Router/cds.xml](Router/cds.xml) to configure where it listens for participant announcements
+3. Nodes do NOT discover each other directly at startup
+4. Instead, each node sends its participant announcements to CDS at `192.168.1.1:7400`
+5. CDS receives those announcements and forwards discovery information so nodes can learn about each other
+6. Once discovery is complete, applications communicate directly—CDS is NOT in the user-data path
+
+---
+
+## Configuration Deep Dive
+
+### Client Configuration: qos.xml
 
 the [Client/qos.xml](qos.xml) defines one QoS library and one profile:
 
@@ -132,13 +179,13 @@ sequenceDiagram
     Note over CDS: Step 1: CDS starts & listens on port 7400
     Note over NodeA, NodeB: Step 2: Nodes launch with 'RouterCDSTest' profile
 
-    rect rgb(240, 248, 255)
+    rect rgb(0, 181, 226)
         Note over NodeA, CDS: Phase 1: Unicast Registration
         NodeA->>CDS: Step 3: Sends Announcement (I am Node A + my locators)
         NodeB->>CDS: Step 3: Sends Announcement (I am Node B + my locators)
     end
 
-    rect rgb(230, 245, 230)
+    rect rgb(164, 214, 94)
         Note over CDS, NodeB: Phase 2: CDS Routing & Discovery Forwarding
         CDS->>NodeB: Step 4: Forwards Node A's announcement
         CDS->>NodeA: Step 4: Forwards Node B's announcement
@@ -146,7 +193,7 @@ sequenceDiagram
 
     Note over NodeA, NodeB: Step 5: Nodes exchange endpoint info & match topics
 
-    rect rgb(255, 243, 2cd)
+    rect rgb(255, 163, 0)
         Note over NodeA, NodeB: Phase 3: Direct Communication (CDS Bypassed)
         NodeA->>NodeB: Step 6: Steady-State User Data Flows Directly
         NodeB->>NodeA: Step 6: Steady-State User Data Flows Directly
@@ -242,9 +289,9 @@ graph LR
         A2[Node A] <--> |Direct Peer-to-Peer / Ephemeral Ports| B2[Node B]
     end
 
-    style CDS fill:#fff3cd,stroke:#ffc107,stroke-width:2px
-    style A2 fill:#e2e3e5,stroke:#383d41
-    style B2 fill:#e2e3e5,stroke:#383d41
+    style CDS fill:#FFA300,stroke:#ED8B00,stroke-width:2px,color:#000
+    style A2 fill:#BBBCBC,stroke:#63666A,color:#000
+    style B2 fill:#BBBCBC,stroke:#63666A,color:#000
 ```
 
 Not initially.
@@ -304,3 +351,88 @@ Think of CDS as a phone directory:
  - once the nodes have each other’s contact info, they talk directly
 
 That is why CDS is often described as a discovery service for multicast-less environments.
+---
+
+## ✅ Testing & Verification
+
+### What Success Looks Like
+
+After completing this example, you should observe:
+1. **CDS service running** on the appliance at `192.168.1.1:7400`
+2. **Participants discover each other** within 5-10 seconds
+3. **Direct data flow** between participants (verify CDS is not in data path)
+4. **Mo Multicast** Verify using wireshark
+
+### Testing Steps
+
+1. **Start CDS on the appliance:**
+   ```bash
+   rticlouddiscoveryserviceapp -cfgFile Router/cds.xml -cfgName CDS
+   ```
+
+2. **Launch first client** (Node A):
+   ```bash
+   rtiddsspy -cfgFile Client/USER_QOS_PROFILES.xml -cfgName CDSQoSLib::RouterCDSTest -domainId 0
+   ```
+
+3. **Launch second client** (Node B) from another terminal:
+   ```bash
+   rtiddsspy -cfgFile Client/USER_QOS_PROFILES.xml -cfgName CDSQoSLib::RouterCDSTest -domainId 0
+   ```
+
+4. **Verify discovery:** Both `rtiddsspy` instances should show:
+   - 2 participants discovered
+   - Endpoint information exchanged
+
+---
+
+### Testing with Shapes Demo
+   
+```bash
+rtishapesdemo -configure
+```
+ - Stop the particiapant
+ - Click "Manage QoS"
+ - Add the Client/USER_QOS_PROFILES.xml file 
+ - Click OK to close the dialog and save the included QoS file list
+ - Choose the profile: "CDSQoSLib::RouterCDSTest" from the dropdown of configured QoS profiles
+ - Select a domain ID (this must be the same as the other participants)
+ - Click Start
+
+---
+
+## 🔧 Troubleshooting
+
+| Problem | Possible Cause | Solution |
+|---------|---------------|----------|
+| Participants don't discover | CDS not reachable | Verify `ping 192.168.1.1` works; check firewall allows UDP/7400 |
+| "No participants found" | Wrong domain ID | Ensure all participants use same domain ID (default: 0) |
+| CDS won't start | Port already in use | Check if port 7400 is available: `netstat -an \| grep 7400` |
+| Discovery works but no data | QoS mismatch | Verify topic names and QoS policies match between reader/writer |
+
+### Common Mistakes
+
+- ❌ Forgetting to disable multicast in `qos.xml`
+- ❌ Using wrong IP address for CDS (must match the appliance IP)
+- ❌ Mixing up domain IDs between participants
+- ❌ Expecting CDS to relay user data (it only relays discovery info)
+
+---
+
+## 📚 Key Takeaways
+
+- ✅ CDS enables discovery without multicast
+- ✅ CDS is **only** for discovery, not user data
+- ✅ After discovery, participants communicate peer-to-peer
+- ✅ `initial_peers` points to CDS, not to other participants
+- ✅ All participants must use the same DDS domain
+
+---
+
+## What's Next?
+
+**→ Continue to [Example 2: Routing Service](../2.%20Routing%20Service/README.md)**
+
+Learn how to aggregate multiple local participants onto a single WAN port using Routing Service.
+
+[← Back to Examples](../README.md) | **Connext Router Appliance Examples**

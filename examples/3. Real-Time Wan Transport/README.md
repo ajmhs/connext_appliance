@@ -1,4 +1,34 @@
-## Navigating Complex Firewalls (Real-Time WAN Transport)
+# Example 3: Real-Time WAN Transport
+
+> **NAT traversal and peer-to-peer connectivity through firewalls**
+
+⏱️ **Time Required:** 20-30 minutes  
+📊 **Difficulty:** Intermediate  
+🔗 **Prerequisites:** Examples 1 & 2  
+📍 **You are here:** Phase 3 of 4 → Global Connectivity
+
+---
+
+## 📋 TL;DR
+
+**What you'll accomplish:** Enable peer-to-peer DDS communication through NAT and firewalls using RT/WAN transport and CDS-assisted discovery.
+
+**Key takeaway:** UDP hole punching allows bidirectional communication through firewalls without VPN overhead—perfect for remote monitoring and telemedicine.
+
+---
+
+## What You'll Learn
+
+By the end of this example, you'll understand:
+- ✅ NAT traversal using UDP hole punching
+- ✅ CDS-assisted public address resolution
+- ✅ Configuring RT/WAN transport
+- ✅ Peer-to-peer data flow without relays
+
+---
+
+## The Challenge
+
 Hospitals often use Network Address Translation (NAT) and strict firewalls that block incoming connections, preventing remote monitoring or telemedicine.
 * **The Problem:** Even if you have the IP, the firewall will drop packets that it didn't specifically "ask for."
 * **The Appliance Solution:** The **RT/WAN transport** uses UDP hole punching. It allows the appliance to establish a peer-to-peer connection through the firewall by "punching" a path out that the remote side can then use to talk back.
@@ -6,19 +36,19 @@ Hospitals often use Network Address Translation (NAT) and strict firewalls that 
 
 ```mermaid
 graph TD
-    subgraph "The Problem: Unsolicited Traffic Dropped"
-        Remote1[Remote Center App] -->|Direct WAN Inbound Connection| FW1(("Hospital Firewall<br>(Strict NAT)"))
-        FW1 -->|Dropped!| Int1[Hospital Internal App]
-        style FW1 fill:#ffcccc,stroke:#b30000,stroke-width:2px
-    end
-
     subgraph "The Solution: UDP Hole Punching via CDS"
         Int2[Hospital Internal App] -->|1. Outbound Request| CDS["CDS Appliance<br>(Public Port Forwarded)"]
         Remote2[Remote Center App] -->|2. Outbound Request| CDS
         CDS -.->|3. Resolves Reflexive Public IPs| Int2
         CDS -.->|3. Resolves Reflexive Public IPs| Remote2
         Int2 <===> |4. Direct Peer-to-Peer STUN Tunnel| Remote2
-        style CDS fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+        style CDS fill:#FFA300,stroke:#ED8B00,stroke-width:2px,color:#000
+    end
+
+    subgraph "The Problem: Unsolicited Traffic Dropped"
+        Remote1[Remote Center App] -->|Direct WAN Inbound Connection| FW1(("Hospital Firewall<br>(Strict NAT)"))
+        FW1 -->|Dropped!| Int1[Hospital Internal App]
+        style FW1 fill:#FFA300,stroke:#ED8B00,stroke-width:2px,color:#000
     end
 ```
 
@@ -64,7 +94,7 @@ graph TD
     end
 
     subgraph "Hospital Edge / Perimeter"
-        FW[["Router Firewall / Static NAT<br>HUB_PUBLIC_PORT ──> 10.101.0.190:7400"]]
+        FW{{"Router Firewall / Static NAT<br>HUB_PUBLIC_PORT ──> 10.101.0.190:7400"}}
     end
 
     subgraph "Hospital A LAN (Domain 0)"
@@ -78,12 +108,12 @@ graph TD
     InternalApp -->|UDPv4_WAN Loopback to Public IP| FW
     
     %% Eventual Peer-to-Peer Link
-    Remote <.=> |Direct Peer-to-Peer User Data| InternalApp
+    Remote <-.-> |Direct Peer-to-Peer User Data| InternalApp
 
-    style FW fill:#f8d7da,stroke:#dc3545,stroke-width:2px
-    style CDS fill:#fff3cd,stroke:#ffc107,stroke-width:2px
-    style Remote fill:#e8f4fd,stroke:#007bff
-    style InternalApp fill:#e8f4fd,stroke:#007bff
+    style FW fill:#FFA300,stroke:#ED8B00,stroke-width:2px,color:#000
+    style CDS fill:#FFA300,stroke:#ED8B00,stroke-width:2px,color:#000
+    style Remote fill:#00B5E2,stroke:#004C97,color:#000
+    style InternalApp fill:#00B5E2,stroke:#004C97,color:#000
 ```
 
 ### Interaction model
@@ -120,7 +150,7 @@ sequenceDiagram
 
     Note over CDS: Step 1: CDS boots & Router maps public port to it
 
-    rect rgb(240, 248, 255)
+    rect rgb(0, 181, 226)
         Note over HospitalApp, CDS: Discovery Registrations (Outbound)
         HospitalApp->>Router: Step 2: Hits public IP via UDPv4_WAN
         Router->>CDS: Forwards registration to CDS
@@ -128,7 +158,7 @@ sequenceDiagram
         Router->>CDS: Forwards registration to CDS
     end
 
-    rect rgb(230, 245, 230)
+    rect rgb(164, 214, 94)
         Note over CDS, RemoteApp: Address Resolution
         Note over CDS: Step 4: CDS extracts public mapping (STUN)<br>from the incoming UDP packets
         CDS-->>Router: Sends peer locators + reflexive IPs
@@ -136,9 +166,9 @@ sequenceDiagram
         CDS-->>RemoteApp: Sends hospital app details
     end
 
-    rect rgb(255, 243, 205)
+    rect rgb(255, 163, 0)
         Note over HospitalApp, RemoteApp: Peer-to-Peer Communication
-        HospitalApp<->RemoteApp: Step 5: Direct bidirectional user data flows safely!
+        HospitalApp<<->>RemoteApp: Step 5: Direct bidirectional user data flows safely!
         Note over HospitalApp, RemoteApp: (CDS is now bypassed in the data stream)
     end
 ```
@@ -179,7 +209,27 @@ After discovery and address resolution:
 
 That direct communication step is explicitly described in the CDS NAT traversal documentation.
 
+
+### Firewall Configuration Required
+
+On your router/firewall at the hospital perimeter:
+
+1. **Static NAT Rule**:
+   - External: `YOUR_PUBLIC_IP:7400` (UDP)
+   - Internal: `192.168.1.1:7400` (CDS appliance)
+
+2. **Firewall Rule**:
+   - Allow UDP inbound to port 7400 from ANY
+   - Allow UDP outbound from 192.168.1.1:7400 to ANY
+
+3. **Verify Public IP**:
+```bash
+curl ifconfig.me
+# Use this IP as HUB_PUBLIC_IP in configurations   
+```
+
 ### Running the demo
+
 #### Start CDS inside Hospital A
 
 On the CDS host:
@@ -209,4 +259,24 @@ rticlouddiscoveryservice -cfgFile cds.xml -cfgName HospitalCDS
  - Press Stop
  - Select profile RemoteMonitorBase
  - Press Start
- - Publish a Square shape 
+ - Publish a Square shape
+
+---
+
+## 📚 Key Takeaways
+
+- ✅ RT/WAN transport enables NAT traversal without VPNs
+- ✅ CDS assists with public address resolution (STUN-like behavior)
+- ✅ UDP hole punching allows bidirectional peer-to-peer communication
+- ✅ After discovery, data flows directly between participants (not through CDS)
+- ✅ Static NAT port forwarding required only for CDS, not for each participant
+
+---
+
+## What's Next?
+
+**→ Continue to [Example 4: Security](../4.%20Security/README.md)**
+
+Learn how to add authentication, encryption, and fine-grained access control to secure your WAN-connected DDS applications. 
+
+[← Back to Examples](../README.md) | **Connext Router Appliance Examples**

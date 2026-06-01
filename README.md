@@ -1,8 +1,44 @@
-## Introduction
+# RTI Connext Router Appliance
 
-Building a **Connext router appliance** on a device like the BananaPi BPI-R3 creates a hardware-isolated "connectivity gateway" that addresses the major IT constraints identified in this [RTI blog post](https://www.rti.com/blog/top-3-tips-to-break-through-hospital-it-silos-with-connext): **multicast prohibition**, **port exhaustion**, **navigating complex firewalls** and **security rigidity**.
+> **A hardware-based connectivity gateway that breaks through IT network constraints**
 
-In a hospital environment—where IT departments treat medical devices as "black boxes" and apply restrictive network policies—this appliance acts as a transformative "bridge" that allows complex distributed systems to function without requiring the IT staff to reconfigure the entire hospital network.
+## What Is This?
+
+This project demonstrates how to build a **Connext router appliance** using a BananaPi BPI-R3—a dedicated hardware device that solves the most common IT networking challenges in restricted environments like hospitals, factories, or secure facilities.
+
+The appliance addresses four critical constraints identified in this [RTI blog post](https://www.rti.com/blog/top-3-tips-to-break-through-hospital-it-silos-with-connext):
+- 🚫 **Multicast prohibition** - Networks that block multicast discovery
+- 🔌 **Port exhaustion** - Strict limits on open firewall ports  
+- 🔥 **Complex firewalls** - NAT and blocked inbound connections
+- 🔒 **Security rigidity** - Zero-trust requirements and audit compliance
+
+## Who Should Read This?
+
+This guide is designed for:
+
+- **Systems Engineers** deploying DDS applications in restricted networks
+- **DevOps Teams** managing connectivity infrastructure  
+- **Network Architects** evaluating solutions for IT-constrained environments
+- **RTI Connext Users** seeking real-world deployment patterns
+
+**Prerequisites:**
+- Basic understanding of DDS and RTI Connext
+- Familiarity with Linux system administration
+- Network configuration experience
+
+## Quick Start: Choose Your Path
+
+| I want to... | Go to... | Time Required |
+|--------------|----------|---------------|
+| **Understand the concepts** | Continue reading below ⬇️ | 10 minutes |
+| **Build the appliance hardware** | [Router Build Guide](router/README.md) | 2-3 hours |
+| **Test the examples** | [Examples Overview](examples/README.md) | 1-2 hours per example |
+
+---
+
+## How It Works: The Four-Layer Solution
+
+In a hospital or enterprise environment where IT departments apply restrictive network policies, this appliance acts as a transformative "bridge" that enables complex distributed systems to function without requiring IT to reconfigure their entire network.
 
 ### 1. Breaking the Multicast Barrier (Cloud Discovery Service)
 Traditional DDS discovery relies on UDP Multicast (the "shout-and-listen" method). However, hospital IT often disables multicast to prevent network congestion.
@@ -28,20 +64,81 @@ IT departments are often hesitant to allow data bridging because of "lateral mov
 * **The Appliance Solution:** **Connext Secure** provides fine-grained, data-centric security. It encrypts and authenticates individual "Topics" (specific data streams).
 * **Transformative Impact:** Even though your appliance is bridging the network, it enforces a **Zero-Trust** model. You can prove to IT that the appliance *only* forwards "Heart Rate" data and strictly blocks any unauthorized commands, satisfying even the most rigid cybersecurity audits.
 
+---
 
+## Summary: What the Appliance Delivers
 
-### Summary of the Transformation
-| IT Constraint | Appliance Component | Transformation |
+| IT Constraint | Appliance Component | How It Transforms Your Network |
 | :--- | :--- | :--- |
-| **No Multicast** | Cloud Discovery Service | Moves discovery from "Shouting" to "Checking a Directory." |
-| **Limited Ports** | Routing Service | Consolidates many data streams into a single managed port. |
-| **NAT/Firewalls** | RT/WAN Transport | Enables P2P traffic through firewalls without complex VPNs. |
-| **Cybersecurity** | Connext Secure | Provides fine-grained control over exactly *what* data is allowed to cross the bridge. |
+| 🚫 **No Multicast** | Cloud Discovery Service | Moves discovery from "broadcast shouting" to "directory lookup" |
+| 🔌 **Limited Ports** | Routing Service | Consolidates dozens of data streams into a single managed port |
+| 🔥 **NAT/Firewalls** | RT/WAN Transport | Enables peer-to-peer traffic through firewalls without VPN overhead |
+| 🔒 **Cybersecurity** | Connext Secure | Provides fine-grained, auditable control over exactly what data crosses boundaries |
 
-By consolidating these on a **BananaPi BPI-R3**, you effectively create a "plug-and-play" network Swiss Army Knife. You can drop this into a restricted hospital environment and instantly create a high-performance, secure data bus that ignores the "silos" typically created by standard IT infrastructure.
+> **💡 The Result:** A "plug-and-play" network connectivity appliance you can deploy in restricted environments to create a high-performance, secure data bus—without requiring IT to reconfigure their infrastructure.
 
-### Building the Router
-See the [router build instructions](router/README.md) to see how to build and configure the router
+---
 
-### Testing the examples
-See the [examples main page](examples/README.md) to see detailed configuration on each of the aforementioned topics
+## Architecture Overview
+
+```mermaid
+graph TB
+    subgraph "Hospital Ward A"
+        A1[Medical Device 1] --> CDS
+        A2[Medical Device 2] --> CDS
+    end
+    
+    CDS[Cloud Discovery Service<br/>192.168.1.1] --> RS[Routing Service]
+    RS --> |Single Port 7400| FW{Firewall/NAT}
+    FW --> |RT/WAN Transport| Remote[Remote Monitoring Center]
+    
+    style CDS fill:#00B5E2
+    style RS fill:#00B5E2
+```
+---
+
+## Next Steps
+
+### 🔧 Build the Appliance
+Ready to create your own router? Follow the comprehensive build guide:
+
+**→ [Router Build Instructions](router/README.md)**
+
+Learn how to:
+- Flash and configure the BananaPi BPI-R3
+- Set up unified networking (wired + wireless)
+- Deploy RTI Connext components
+- Configure systemd services
+
+**Time Required:** 4-6 hours (including 2-3 hours for image build) | **Difficulty:** Intermediate
+
+---
+
+### 🧪 Test the Examples
+Explore hands-on examples demonstrating each capability:
+
+**→ [Examples Overview](examples/README.md)**
+
+Work through four progressive examples:
+1. **Cloud Discovery Service** - Zero-multicast discovery (15-20 min)
+2. **Routing Service** - Port aggregation and WAN gateways (20-30 min)
+3. **Real-Time WAN Transport** - NAT traversal and remote connectivity (20-30 min)
+4. **Security** - Authentication, encryption, and access control (30-40 min)
+
+**Total Time:** 1.5-2 hours | **Difficulty:** Beginner to Intermediate
+
+---
+
+## Additional Resources
+
+- **RTI Blog Post:** [Breaking Through Hospital IT Silos](https://www.rti.com/blog/top-3-tips-to-break-through-hospital-it-silos-with-connext)
+- **RTI Documentation:** [Connext Professional](https://community.rti.com/documentation)
+- **Hardware:** [BananaPi BPI-R3 Documentation](https://docs.banana-pi.org/en/BPI-R3/BananaPi_BPI-R3)
+
+---
+
+## Support
+
+For questions about this project or RTI Connext Professional, visit:
+- [RTI Community Portal](https://community.rti.com)
+- [RTI Support](https://www.rti.com/support)
