@@ -45,7 +45,7 @@ In a hospital or enterprise environment where IT departments apply restrictive n
 #### tl;dr - Breaking the Multicast Barrier (Cloud Discovery Service)
 > Traditional DDS discovery relies on UDP Multicast (the "shout-and-listen" method). However, hospital IT often disables multicast to prevent network congestion.
 > * **The Problem:** Without multicast, applications can’t "see" each other to start communicating.
-> * **The Appliance Solution:** By hosting the **Cloud Discovery Service (CDS)**, your appliance acts as a "rendezvous point." Instead of shouting to the whole network, applications simply check in with the appliance (via unicast) to find their peers.
+> * **The Appliance Solution:** By hosting the **Cloud Discovery Service (CDS)**, the appliance acts as a "rendezvous point." Instead of shouting to the whole network, applications simply check in with the appliance (via unicast) to find their peers.
 > * **Transformative Impact:** It enables dynamic discovery in a "Zero-Multicast" environment without requiring you to manually hardcode every IP address in the system.
 
 
@@ -73,10 +73,10 @@ This last point is important: CDS is a matchmaker, not a broker. It never touche
 
 
 #### Deployment in Practice
-CDS can run on any host with a static IP or DNS name — which is exactly what a dedicated appliance provides. Hosting CDS on your appliance means:
+CDS can run on any host with a static IP or DNS name — which is exactly what a dedicated appliance provides. Hosting CDS on the appliance means:
 
  - **Zero multicast required** anywhere on the hospital network.
- - **Single configuration touchpoint**: clinical applications only need one address in their initial_peers list (your appliance), not a full roster of every system node. That address can be set via environment variable, XML QoS profile, or in code — whichever fits the deployment model.
+ - **Single configuration touchpoint**: clinical applications only need one address in their initial_peers list (the appliance), not a full roster of every system node. That address can be set via environment variable, XML QoS profile, or in code — whichever fits the deployment model.
  - **Dynamic membership**: devices can join or leave the system at runtime. A new monitoring node comes online, checks in with CDS, gets introduced to its peers, and starts communicating — no manual reconfiguration, no redeployment.
  - **No impact on data path**: once discovery completes, all clinical data travels directly between applications over unicast, so there's no appliance bottleneck and no single point of failure for runtime data traffic.
 
@@ -140,7 +140,7 @@ This architecture combines naturally with CDS. Routing Service's UDP DomainParti
 #### The NAT and Firewall Reality in Healthcare Networks
 Hospital networks are almost universally built around the assumption that traffic flows*inward by request, not inward by arrival*. NAT is the mechanism that enforces this at the IP layer: the hospital's router presents a single public IP address to the outside world, and internally maps connections to private addresses that are invisible and unreachable from outside. The firewall compounds this by maintaining stateful connection tables — it permits return traffic only for connections that originated from inside the network.
 
-This is sound security practice, and hospital IT has no intention of relaxing it. The consequence for medical device vendors is significant: if your appliance is sitting inside a hospital network and you need to exchange data with a remote system — a central monitoring hub in another facility, a cloud analytics platform, a telemedicine endpoint — you cannot simply connect to it by IP. The remote system cannot initiate a connection inward through the NAT, and the firewall will silently drop any unsolicited inbound packets.
+This is sound security practice, and hospital IT has no intention of relaxing it. The consequence for medical device vendors is significant: if the appliance is sitting inside a hospital network and you need to exchange data with a remote system — a central monitoring hub in another facility, a cloud analytics platform, a telemedicine endpoint — you cannot simply connect to it by IP. The remote system cannot initiate a connection inward through the NAT, and the firewall will silently drop any unsolicited inbound packets.
 
 The traditional answer to this problem is a VPN: establish an encrypted tunnel that makes the remote network appear local, bypassing the NAT and firewall constraints entirely. But VPNs introduce their own problems in a healthcare context. They require IT to provision and manage tunnel endpoints, they add encapsulation overhead that increases latency, and they are often implemented as all-or-nothing network-level constructs that sit uncomfortably with the zero-trust data security model described earlier. For real-time clinical data where latency budgets are tight, the added overhead of VPN encapsulation is a meaningful cost.
 
@@ -185,7 +185,7 @@ From IT's perspective, the network behaviour is straightforward: the appliance i
 > IT departmentsare often hesitant to allow data bridging because of "lateral movement" risks (the fear that a breach in one device leads to the whole network).
 > * **The Problem:** Standard network security (like a VPN) is "all or nothing"—once you're in, you can see everything.
 > * **The Appliance Solution:** **Connext Secure** provides fine-grained, data-centric security. It encrypts and authenticates individual "Topics" (specific data streams).
-> * **Transformative Impact:** Even though your appliance is bridging the network, it enforces a **Zero-Trust** model. You can prove to IT that the appliance *only* forwards "Heart Rate" data and strictly blocks any unauthorized commands, satisfying even the most rigid cybersecurity audits.
+> * **Transformative Impact:** Even though the appliance is bridging the network, it enforces a **Zero-Trust** model. You can prove to IT that the appliance *only* forwards "Heart Rate" data and strictly blocks any unauthorized commands, satisfying even the most rigid cybersecurity audits.
 
 #### Why Hospital IT Is Right to Be Nervous About Network Bridging
 
@@ -213,7 +213,7 @@ The architecture is built around five security pillars, each addressing a distin
 #### Deny-by-Default: What Zero-Trust Actually Means Here
 The term "zero-trust" is widely used but often poorly implemented. In RTI's architecture it has a specific and verifiable meaning: **the default permission for any communication is deny**, and explicit grants are required for every Topic, every direction, and every identity. There is no implicit trust conferred by being "on the network" or even by being authenticated as a valid system participant.
 
-For your appliance, this means the following can be stated — and demonstrated — to a hospital IT security team:
+For the appliance, this means the following can be stated — and demonstrated — to a hospital IT security team:
 
 - The appliance's Routing Service instance holds credentials that explicitly permit it to subscribe to a defined set of clinical Topics and republish them on the remote segment.
 - Those permissions are encoded in signed governance and permissions documents that the middleware enforces cryptographically.
