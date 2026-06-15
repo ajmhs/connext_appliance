@@ -56,7 +56,7 @@ Multicast is routinely disabled in clinical networks for two reasons. First, **s
 The side-effect of disabling multicast is that standard DDS discovery simply stops working. Applications go deaf to each other. Without a mechanism to find peers, the DDS databus can't form, and your distributed system never gets off the ground.
 
 #### The Naïve Workaround — and Why It Doesn't Scale
-The blunt-force fix is to statically configure ```NDDS_DISCOVERY_PEERS``` (or the XML equivalent) with the explicit IP address of every participant in the system. This works, but it's brittle: every time a node is added, moved, or replaced, someone has to update configuration files across potentially dozens of applications. In a medical device context under IEC 62304, that kind of change carries a documentation and validation burden you'd rather avoid.
+The blunt-force fix is to statically configure ```NDDS_DISCOVERY_PEERS``` (or the XML equivalent) with the explicit IP address of every participant in the system. This works, but it's brittle: every time a node is added, moved, or replaced, someone has to update configuration files across potentially dozens of applications. This can work well in highly static environments, but in a medical device context under IEC 62304, that kind of change carries a documentation and validation burden you'd rather avoid.
 Traditional DDS discovery relies on UDP Multicast (the "shout-and-listen" method). However, hospital IT often disables multicast to prevent network congestion.
 
 #### RTI Cloud Discovery Service: A Smarter Rendezvous
@@ -69,7 +69,7 @@ RTI Cloud Discovery Service (CDS) solves this elegantly. It is a lightweight sta
 This last point is important: CDS is a matchmaker, not a broker. It never touches user data — only the SPDP/SEDP discovery traffic. Once the system has converged and all participants know each other, CDS can go away entirely, and data flows with full DDS performance directly between endpoints.
 
 
-<a href="https://www.rti.com/blog/top-3-tips-to-break-through-hospital-it-silos-with-connext?wvideo=1xz7r84b45"><img src="https://embed-ssl.wistia.com/deliveries/924770d67fd614bf9a041e2cb5c34e450a367977.jpg?image_play_button_size=2x&image_crop_resized=960x540&image_play_button_rounded=1&image_play_button_color=174bd2e0" style="width: 600px;" width="600"></a>
+<a href="https://www.rti.com/blog/top-3-tips-to-break-through-hospital-it-silos-with-connext?wvideo=1xz7r84b45" target="_blank" rel="noopener noreferrer"><img src="https://embed-ssl.wistia.com/deliveries/924770d67fd614bf9a041e2cb5c34e450a367977.jpg?image_play_button_size=2x&image_crop_resized=960x540&image_play_button_rounded=1&image_play_button_color=174bd2e0" style="width: 600px;" width="600"></a>
 
 
 #### Deployment in Practice
@@ -138,7 +138,7 @@ This architecture combines naturally with CDS. Routing Service's UDP DomainParti
 > * **Transformative Impact:** It provides **VPN-like connectivity without the overhead or latency of a VPN**, allowing real-time data to flow across different network segments securely and reliably.
 
 #### The NAT and Firewall Reality in Healthcare Networks
-Hospital networks are almost universally built around the assumption that traffic flows*inward by request, not inward by arrival*. NAT is the mechanism that enforces this at the IP layer: the hospital's router presents a single public IP address to the outside world, and internally maps connections to private addresses that are invisible and unreachable from outside. The firewall compounds this by maintaining stateful connection tables — it permits return traffic only for connections that originated from inside the network.
+Hospital networks are almost universally built around the assumption that traffic flows *inward by request, not inward by arrival*. NAT is the mechanism that enforces this at the IP layer: the hospital's router presents a single public IP address to the outside world, and internally maps connections to private addresses that are invisible and unreachable from outside. The firewall compounds this by maintaining stateful connection tables — it permits return traffic only for connections that originated from inside the network.
 
 This is sound security practice, and hospital IT has no intention of relaxing it. The consequence for medical device vendors is significant: if the appliance is sitting inside a hospital network and you need to exchange data with a remote system — a central monitoring hub in another facility, a cloud analytics platform, a telemedicine endpoint — you cannot simply connect to it by IP. The remote system cannot initiate a connection inward through the NAT, and the firewall will silently drop any unsolicited inbound packets.
 
@@ -211,7 +211,7 @@ The architecture is built around five security pillars, each addressing a distin
 - **Availability** — The security architecture is designed not to become a bottleneck. Selective encryption and efficient key management mean that security overhead does not compromise the real-time performance properties that medical applications require.
 
 #### Deny-by-Default: What Zero-Trust Actually Means Here
-The term "zero-trust" is widely used but often poorly implemented. In RTI's architecture it has a specific and verifiable meaning: **the default permission for any communication is deny**, and explicit grants are required for every Topic, every direction, and every identity. There is no implicit trust conferred by being "on the network" or even by being authenticated as a valid system participant.
+The term "zero-trust" is widely used but often poorly understood. In RTI's architecture it has a specific and verifiable meaning: **the default permission for any communication is deny**, and explicit grants are required for every Topic, every direction, and every identity. There is no implicit trust conferred by being "on the network" or even by being authenticated as a valid system participant.
 
 For the appliance, this means the following can be stated — and demonstrated — to a hospital IT security team:
 
