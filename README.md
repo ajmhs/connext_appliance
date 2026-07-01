@@ -2,6 +2,8 @@
 
 > **A hardware-based connectivity gateway that breaks through IT network constraints**
 
+![The BananaPi BPI-R3 in an acrylic case ](images/bananapi_rpi3.png)
+
 ## What Is This?
 
 This project demonstrates how to build a **Connext router appliance** using a BananaPi BPI-R3—a dedicated hardware device that solves the most common IT networking challenges in restricted environments like hospitals, factories, or secure facilities.
