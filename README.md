@@ -125,7 +125,8 @@ RTI's solution is to fundamentally change the architecture so that the port-prol
 
 The key insight is to split communication into two distinct layers with different transports:
 
-- **Local layer — shared memory (SHMEM)**: Applications on the same host communicate with each other exclusively over shared memory. A SHMEM DomainParticipant uses no UDP ports whatsoever. From the network's perspective, inter-application traffic on a single host is invisible — it never touches the wire.
+- **Local layer — shared memory (SHMEM)**: Applications on the same host usually communicate with each other over shared memory. When both participants have SHMEM enabled and compatible, Connext prefers this transport for local traffic, keeping it off the wire and out of view from the network's perspective. (SHMEM typically runs alongside UDP by default, so applications can still fall back to UDP loopback when needed).
+
 - **Wide-area layer — UDP unicast**: Routing Service creates a single UDP DomainParticipant that acts as the gateway between the local SHMEM domain and the rest of the network. This single participant consumes a fixed, known number of UDP ports: three when multicast is enabled (the standard default), or just two when multicast is disabled — which, as covered earlier, it almost always is in a hospital environment.
 
 Routing Service bridges these two layers, collecting data from local applications via SHMEM and forwarding it outbound over those two UDP ports, and conversely receiving inbound traffic over UDP and delivering it locally via SHMEM.
